@@ -27,22 +27,20 @@
 											 :data-test (:selected station)} (:name station)))))
 
 #_(defn change [e owner]
-  (om/set-state! owner :text (.. e -target -selectedIndex)))
+  (om/set-state! owner :text (.. e -0 -value)))
 
-(defn change-current-station [event owner]
-
-												(.log js/console (.-target event) #_(.. event -target -selectedIndex))
-												(.preventDefault event)
-												)
+(defn change-current-station [event owner nick]
+												(println (.-value (.getElementById js/document nick)))
+												(.preventDefault event))
 
 (defn network-view [line owner]
 	(reify
 		om/IRender
 		(render [_]
 			(dom/div nil (:name line)
-							 (dom/form #js {:onSubmit #(change-current-station % owner)}
+							 (dom/form #js {:onSubmit #(change-current-station % owner (:nick @line))}
 									(dom/legend nil (:nick line))
-									(apply dom/select nil
+									(apply dom/select #js {:id (:nick line)}
 												 (om/build-all station-view (:stations line)))
 									(dom/button #js {:type "submit" :style #js {:color "red"}} "Go"))))))
 

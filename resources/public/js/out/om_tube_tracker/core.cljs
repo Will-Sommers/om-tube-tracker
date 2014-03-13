@@ -5,7 +5,6 @@
             [cljs.core.async :refer [put! chan <!]]))
 (enable-console-print!)
 
-(js/alert #(str (chan)))
 (def js-data (js->clj js/data :keywordize-keys true))
 
 
@@ -27,17 +26,25 @@
 			(dom/option #js {:value (:name station)
 											 :data-test (:selected station)} (:name station)))))
 
+#_(defn change [e owner]
+  (om/set-state! owner :text (.. e -target -selectedIndex)))
+
+(defn change-current-station [event owner]
+
+												(.log js/console (.-target event) #_(.. event -target -selectedIndex))
+												(.preventDefault event)
+												)
+
 (defn network-view [line owner]
 	(reify
 		om/IRender
 		(render [_]
 			(dom/div nil (:name line)
-							 (dom/form #js {:onSubmit #(js/alert "alert")}
+							 (dom/form #js {:onSubmit #(change-current-station % owner)}
 									(dom/legend nil (:nick line))
 									(apply dom/select nil
 												 (om/build-all station-view (:stations line)))
 									(dom/button #js {:type "submit" :style #js {:color "red"}} "Go"))))))
-												 ;;(map #(dom/option #js {:value (:name %)} (:name %)) (:stations line))))))))
 
 (defn app-view [app owner]
 	(reify

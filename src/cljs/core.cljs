@@ -5,7 +5,6 @@
             [cljs.core.async :refer [put! chan <!]]))
 (enable-console-print!)
 
-(js/alert #(str (chan)))
 (def js-data (js->clj js/data :keywordize-keys true))
 
 
@@ -41,6 +40,11 @@
 
 (defn app-view [app owner]
 	(reify
+		om/IInitState
+		(init-state [this]
+			{:current-station (chan)})
+		om/IWillMount
+		(will-mount [])
 		om/IRender
 		(render [_]
 			(apply dom/ul #js {:className "network"}

@@ -64,7 +64,6 @@
 								(om/set-state! owner :message cs))))))
 		om/IRenderState
 		(render-state [_ {:keys [message chans]}]
-			(println  message)
 			(dom/div nil
 				(apply dom/ul #js {:className "network"}
 					(om/build-all network-view (:tube-data app)

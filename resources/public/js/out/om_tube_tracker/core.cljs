@@ -28,8 +28,8 @@
 			(dom/option #js {:value (:name station)
 											 :data-test (:selected station)} (:name station)))))
 
-(defn change-current-station [event owner station-name c-current-station]
-												(put! c-current-station station-name)
+(defn change-current-station [event owner nick c-current-station]
+												(put! c-current-station (.-value (.getElementById js/document nick)))
 												(.preventDefault event))
 
 (defn network-view [line owner]
@@ -37,7 +37,7 @@
 		om/IRenderState
 		(render-state [_ {:keys [current-station]}]
 			(dom/div nil (:name line)
-							 (dom/form #js {:onSubmit #(change-current-station % owner (:name @line) current-station)}
+							 (dom/form #js {:onSubmit #(change-current-station % owner (:nick @line) current-station)}
 									(dom/legend nil (:nick line))
 									(apply dom/select #js {:id (:nick line)}
 												 (om/build-all station-view (:stations line)))

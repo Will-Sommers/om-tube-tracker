@@ -2,7 +2,8 @@
 (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]
-            [cljs.core.async :refer [put! chan <!]]))
+            [cljs.core.async :as async :refer [put! chan <! sliding-buffer]]))
+
 (enable-console-print!)
 
 (def js-data (js->clj js/data :keywordize-keys true))
@@ -13,11 +14,12 @@
 													:nick (name k)
 													:stations (map
 																		 #(hash-map :nick %
-																			 :name ((keyword %) (:stations js-data))
-																			 :selected false)
+																			 :name ((keyword %) (:stations js-data)))
 																		 (k (:stationsOnLines js-data)))})))
 
-(def state (atom data))
+
+(def state (atom {:tube-data data
+									:selected-stations ["Testing"]}))
 
 (defn station-view [station owner]
 	(reify
@@ -26,30 +28,50 @@
 			(dom/option #js {:value (:name station)
 											 :data-test (:selected station)} (:name station)))))
 
-#_(defn change [e owner]
-  (om/set-state! owner :text (.. e -0 -value)))
-
-(defn change-current-station [event owner nick]
-												(println (.-value (.getElementById js/document nick)))
+(defn change-current-station [event owner station-name c-current-station]
+												(put! c-current-station station-name)
 												(.preventDefault event))
 
 (defn network-view [line owner]
 	(reify
-		om/IRender
-		(render [_]
+		om/IRenderState
+		(render-state [_ {:keys [current-station]}]
 			(dom/div nil (:name line)
-							 (dom/form #js {:onSubmit #(change-current-station % owner (:nick @line))}
+							 (dom/form #js {:onSubmit #(change-current-station % owner (:name @line) current-station)}
 									(dom/legend nil (:nick line))
 									(apply dom/select #js {:id (:nick line)}
 												 (om/build-all station-view (:stations line)))
-									(dom/button #js {:type "submit" :style #js {:color "red"}} "Go"))))))
+									(dom/button #js {:type "submit"
+																	 :style #js {:color "red"}} "Go"))))))
 
-(defn app-view [app owner]
+(defn predictions-view [prediction owner]
 	(reify
 		om/IRender
 		(render [_]
-			(apply dom/ul #js {:className "network"}
-				(om/build-all network-view app)))))
+			(dom/div #js {:className "predictions"}
+				(dom/ul nil (first prediction))))))
+
+(defn app-view [app owner]
+	(reify
+		om/IInitState
+		(init-state [_]
+			{:chans {:current-station (chan)}})
+		om/IWillMount
+		(will-mount [_]
+			(let [current-station (om/get-state owner [:chans :current-station])]
+				(go (while true
+							(let [cs (<! current-station)]
+								(om/set-state! owner :message cs))))))
+		om/IRenderState
+		(render-state [_ {:keys [message chans]}]
+			(println  message)
+			(dom/div nil
+				(apply dom/ul #js {:className "network"}
+					(om/build-all network-view (:tube-data app)
+									{:init-state chans}))
+				(om/build predictions-view (:selected-stations app))
+				(when message
+					(dom/div nil message))))))
 
 (om/root
 	app-view

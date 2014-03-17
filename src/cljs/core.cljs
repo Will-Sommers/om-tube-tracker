@@ -50,7 +50,7 @@
 		om/IRender
 		(render [_]
 			(dom/div #js {:className "predictions"}
-				(dom/ul nil (first prediction))))))
+				(dom/ul nil (last prediction))))))
 
 (defn app-view [app owner]
 	(reify
@@ -62,15 +62,14 @@
 			(let [current-station (om/get-state owner [:chans :current-station])]
 				(go (while true
 							(let [cs (<! current-station)]
-								(om/update! app :selected-stations (conj [] cs)))))))
+								(om/transact! app :selected-stations #(conj % cs)))))))
 		om/IRenderState
 		(render-state [_ {:keys [chans]}]
 			(dom/div nil
 				(apply dom/ul #js {:className "network"}
 					(om/build-all network-view (sort-by :name (:tube-data app))
 									{:init-state chans}))
-				(om/build predictions-view (:selected-stations app))
-				))))
+				(om/build predictions-view (:selected-stations app))))))
 
 (om/root
 	app-view

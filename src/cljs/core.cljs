@@ -2,7 +2,8 @@
 (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]
-            [cljs.core.async :as async :refer [put! chan <! sliding-buffer]]))
+            [cljs.core.async :as async :refer [put! chan <! sliding-buffer]]
+						[om-tube-tracker.utils :refer [resp-text]]))
 
 (enable-console-print!)
 
@@ -19,7 +20,7 @@
 
 
 (def state (atom {:tube-data data
-									:selected-stations ["Testing"]}))
+									:selected-stations ["Testin"]}))
 
 (defn station-view [station owner]
 	(reify
@@ -61,16 +62,15 @@
 			(let [current-station (om/get-state owner [:chans :current-station])]
 				(go (while true
 							(let [cs (<! current-station)]
-								(om/set-state! owner :message cs))))))
+								(om/update! app :selected-stations (conj [] cs)))))))
 		om/IRenderState
-		(render-state [_ {:keys [message chans]}]
+		(render-state [_ {:keys [chans]}]
 			(dom/div nil
 				(apply dom/ul #js {:className "network"}
-					(om/build-all network-view (:tube-data app)
+					(om/build-all network-view (sort-by :name (:tube-data app))
 									{:init-state chans}))
 				(om/build predictions-view (:selected-stations app))
-				(when message
-					(dom/div nil message))))))
+				))))
 
 (om/root
 	app-view

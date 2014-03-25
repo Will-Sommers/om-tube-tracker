@@ -3,10 +3,19 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :jvm-opts ^:replace ["-Xmx1g" "-server"]
   :dependencies [[org.clojure/clojure "1.5.1"]
-				 [org.clojure/clojurescript "0.0-2173"]
-				 [om "0.5.2"]
-				 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]]
+								 [org.clojure/clojurescript "0.0-2173"]
+								 [om "0.5.2"]
+								 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
+								 [ring/ring "1.2.1"]
+								 [compojure "1.1.6"]
+								 [fogus/ring-edn "0.2.0"]
+								 [cljs-ajax "0.2.3"]
+								 [ring-cors "0.1.0"]
+								 [clj-http "0.9.1"]
+								 [org.clojure/data.xml "0.0.7"]
+								 [com.cemerick/url "0.1.1"]]
 
   :plugins [[lein-cljsbuild "1.0.2"]]
   :source-paths ["src/clj" "src/cljs"]
@@ -14,7 +23,7 @@
 
   :cljsbuild {
 	:builds [{:id "dev"
-			  :source-paths ["src/clj" "src/cljs"]
+			  :source-paths ["src/cljs"]
 			  :compiler {
 						 :output-to "resources/public/js/main.js"
 						 :output-dir "resources/public/js/out"

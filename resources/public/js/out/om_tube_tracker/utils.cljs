@@ -37,5 +37,6 @@
     </P>
   </S>
 </ROOT></results></query><!-- total: 1150 -->
-<!-- engine4.yql.bf1.yahoo.com -->)")
+<!-- engine4.yql.bf1.yahoo.com -->")
 
+(resp-text)
